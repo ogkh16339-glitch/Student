@@ -4,3 +4,4 @@ et_xmlfile==2.0.0
 openpyxl==3.1.5
 pillow==12.1.1
 sqlparse==0.5.5
+gunicorn==22.1.0
