@@ -1,0 +1,198 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8faff; }
+    
+    .glass-header { 
+        background: rgba(255, 255, 255, 0.8); 
+        backdrop-filter: blur(15px); 
+        border-radius: 24px; 
+        border: 1px solid rgba(255, 255, 255, 0.5); 
+    }
+    
+    .timetable-card { 
+        border-radius: 24px; 
+        background: white; 
+        border: none !important; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+    
+    .timetable-card:hover { 
+        transform: translateY(-8px); 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important; 
+    }
+
+    .lesson-row { 
+        transition: all 0.2s ease; 
+        border-radius: 18px; 
+        background: #fbfcfe; 
+        border: 1px solid #f1f4f9; 
+        margin-bottom: 12px; 
+        padding: 1rem;
+    }
+
+    .lesson-row:hover { 
+        background: white; 
+        border-color: #4154f1; 
+        box-shadow: 0 8px 20px rgba(65, 84, 241, 0.1); 
+    }
+
+    .time-badge { 
+        background: linear-gradient(45deg, #4154f1, #6f42c1);
+        color: white; padding: 6px 14px; border-radius: 12px; 
+        font-weight: 700; font-size: 0.85rem; 
+    }
+
+    .search-group .form-control {
+        border-radius: 15px;
+        padding-left: 45px;
+        height: 50px;
+        border: 1px solid #e0e6ed;
+        transition: all 0.3s;
+    }
+
+    .search-group .form-control:focus {
+        box-shadow: 0 0 0 4px rgba(65, 84, 241, 0.1);
+        border-color: #4154f1;
+    }
+
+    .search-group i {
+        left: 15px;
+        font-size: 1.2rem;
+        color: #adb5bd;
+    }
+
+    .empty-state {
+        background: white;
+        border-radius: 30px;
+        padding: 60px 20px;
+    }
+</style>
+
+<div class="pagetitle mb-4">
+    <div class="glass-header p-4 shadow-sm d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+            <h1 class="fw-bold h3 m-0 text-dark">Academic Timetable</h1>
+            <p class="text-muted small mb-0"><i class="bi bi-calendar-check me-1"></i> Organized study management</p>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary btn-action dropdown-toggle rounded-4 shadow-sm" data-bs-toggle="dropdown">
+                    <i class="bi bi-download me-2"></i>Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2">
+                    <li><a class="dropdown-item rounded-3 py-2" href="{% url 'core:export_timetable_excel' %}"><i class="bi bi-file-earmark-excel me-2 text-success"></i>Excel (.xlsx)</a></li>
+                    <li><a class="dropdown-item rounded-3 py-2" href="#" onclick="window.print()"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>PDF / Print</a></li>
+                </ul>
+            </div>
+            <button class="btn btn-primary btn-action shadow rounded-4" onclick="document.getElementById('importFile').click()">
+                <i class="bi bi-upload me-2"></i>Import
+            </button>
+            <form id="importForm" action="{% url 'core:import_timetable_excel' %}" method="POST" enctype="multipart/form-data" class="d-none">
+                {% csrf_token %}
+                <input type="file" id="importFile" name="excel_file" onchange="this.form.submit()" accept=".xlsx, .xls">
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4 justify-content-start">
+    <div class="col-md-5">
+        <form method="GET" action="{% url 'core:timetable' %}" class="search-group position-relative">
+            <i class="bi bi-search position-absolute top-50 translate-middle-y"></i>
+            <input type="text" name="q" class="form-control" placeholder="Search groups or rooms..." value="{{ request.GET.q|default:'' }}">
+            {% if request.GET.q %}
+                <a href="{% url 'core:timetable' %}" class="position-absolute top-50 end-0 translate-middle-y me-3 text-danger">
+                    <i class="bi bi-x-circle-fill"></i>
+                </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<section class="section">
+    <div class="row g-4" id="timetable-container">
+        {% if timetable_data %}
+            {% for day, lessons in timetable_data.items %}
+            <div class="col-xl-4 col-md-6">
+                <div class="card timetable-card shadow-sm h-100">
+                    <div class="card-header bg-transparent border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold text-dark">{{ day }}</h5>
+                        {% if day == today_name %}
+                        <span class="badge bg-primary rounded-pill px-3 py-2 shadow-sm">Today</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body px-3 pb-3">
+                        {% for lesson in lessons %}
+                        <div class="lesson-row d-flex align-items-center justify-content-between" id="lesson-{{ lesson.id }}">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 text-center" style="min-width: 75px;">
+                                    <div class="time-badge mb-1">{{ lesson.start_time|time:"H:i" }}</div>
+                                    <div class="x-small text-muted fw-500">{{ lesson.end_time|time:"H:i" }}</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark">{{ lesson.group.name }}</h6>
+                                    <p class="mb-0 small text-muted"><i class="bi bi-geo-alt-fill me-1 text-primary"></i>{{ lesson.room }}</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-light btn-sm rounded-circle border-0 shadow-sm" onclick="confirmDelete('{{ lesson.id }}', '{{ lesson.group.name }}')">
+                                <i class="bi bi-trash3 text-danger"></i>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state text-center shadow-sm">
+                    <i class="bi bi-search-heart display-1 text-primary opacity-25"></i>
+                    <h3 class="mt-4 fw-bold">No results found</h3>
+                    <p class="text-muted">We couldn't find any lessons matching your search criteria.</p>
+                    <a href="{% url 'core:timetable' %}" class="btn btn-primary rounded-pill px-4">Show all lessons</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmDelete(id, name) {
+    Swal.fire({
+        title: 'Delete this lesson?',
+        text: `Group: ${name}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#4154f1',
+        cancelButtonColor: '#f8d7da',
+        confirmButtonText: 'Yes, delete it!',
+        borderRadius: '20px'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // URL to'g'ri namespace bilan
+            let deleteUrl = "{% url 'core:delete_timetable' 0 %}".replace('0', id);
+            
+            fetch(deleteUrl)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    $(`#lesson-${id}`).fadeOut(400, function() {
+                        location.reload(); 
+                    });
+                }
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

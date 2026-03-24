@@ -1,0 +1,84 @@
+
+{% load static %}
+<div class="detail-page">
+    <header class="detail-header">
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="/">Bosh sahifa</a> / <span>{{ university.name }}</span>
+            </nav>
+            <h1 class="uni-title">{{ university.name }}</h1>
+        </div>
+    </header>
+
+    <div class="container main-content">
+        <div class="uni-info-grid">
+            <div class="description-section">
+                {% if university.image %}
+                <div class="main-image">
+                    <img src="{{ university.image.url }}" alt="{{ university.name }}">
+                </div>
+                {% endif %}
+                
+                <div class="text-content">
+                    <h3>Oliygo'h haqida</h3>
+                    <p>{{ university.description|linebreaks }}</p>
+                </div>
+            </div>
+
+            <aside class="contact-sidebar">
+                <div class="sticky-card">
+                    <h4>Ma'lumotlar</h4>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <strong>Manzil:</strong>
+                            <p>{{ university.address }}</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <strong>Telefon:</strong>
+                            <p>{{ university.phone }}</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <section class="directions-section">
+            <h3 class="section-title">O'tish ballari (2025)</h3>
+            <div class="table-container">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Yo‘nalish nomi</th>
+                            <th>Ta'lim shakli</th>
+                            <th>Grant</th>
+                            <th>Kontrakt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for direction in university.directions.all %}
+                            {% for result in direction.results.all %}
+                            <tr>
+                                <td>
+                                    <span class="dir-code">{{ direction.code }}</span>
+                                    <span class="dir-name">{{ direction.name }}</span>
+                                </td>
+                                <td><span class="badge">{{ result.get_study_type_display }}</span></td>
+                                <td class="score grant">{{ result.grant_score }}</td>
+                                <td class="score contract">{{ result.contract_score|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="no-data">Ma'lumot kiritilmagan</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>

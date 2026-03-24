@@ -1,0 +1,152 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pagetitle">
+  <h1>Profil</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Bosh sahifa</a></li>
+      <li class="breadcrumb-item active">Admin Profili</li>
+    </ol>
+  </nav>
+</div>
+
+<section class="section profile">
+  <div class="row">
+    <div class="col-xl-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+          {% if user.profile.profile_pic %}
+            <img src="{{ user.profile.profile_pic.url }}" alt="Profile" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #f0f4f8;">
+          {% else %}
+            <img src="{% static 'img/profie-img.png' %}" alt="Profile" class="rounded-circle mb-3" style="width: 120px; border: 3px solid #f0f4f8;">
+          {% endif %}
+          
+          <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+          <span class="badge bg-primary-light text-primary px-3 py-2 rounded-pill">Tizim Admini</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body pt-3">
+          <ul class="nav nav-tabs nav-tabs-bordered">
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Ma'lumotlar</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Tahrirlash</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Parol</button>
+            </li>
+          </ul>
+
+          <div class="tab-content pt-2">
+            <div class="tab-pane fade show active profile-overview" id="profile-overview">
+              <h5 class="card-title text-primary small text-uppercase">Shaxsiy ma'lumotlar</h5>
+              
+              <div class="row mb-3">
+                <div class="col-lg-3 col-md-4 label text-muted fw-bold small">F.I.O</div>
+                <div class="col-lg-9 col-md-8 fw-bold">{{ user.get_full_name|default:user.username }}</div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-lg-3 col-md-4 label text-muted fw-bold small">Telefon</div>
+                <div class="col-lg-9 col-md-8">{{ user.profile.phone_number|default:"Kiritilmagan" }}</div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-lg-3 col-md-4 label text-muted fw-bold small">Email</div>
+                <div class="col-lg-9 col-md-8 text-primary">{{ user.email }}</div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-lg-3 col-md-4 label text-muted fw-bold small">Manzil</div>
+                <div class="col-lg-9 col-md-8">{{ user.profile.address|default:"Kiritilmagan" }}</div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-lg-3 col-md-4 label text-muted fw-bold small">Oxirgi kirish</div>
+                <div class="col-lg-9 col-md-8">{{ user.last_login|date:"d F, Y | H:i" }}</div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+              <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row mb-3">
+                  <label class="col-md-4 col-lg-3 col-form-label small fw-bold">Profil rasmi</label>
+                  <div class="col-md-8 col-lg-9">
+                    {{ p_form.profile_pic }}
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <label class="col-md-4 col-lg-3 col-form-label small fw-bold">Username</label>
+                  <div class="col-md-8 col-lg-9">{{ u_form.username }}</div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Ism</label>
+                    {{ u_form.first_name }}
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Familiya</label>
+                    {{ u_form.last_name }}
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <label class="col-md-4 col-lg-3 col-form-label small fw-bold">Telefon</label>
+                  <div class="col-md-8 col-lg-9">{{ p_form.phone_number }}</div>
+                </div>
+
+                <div class="row mb-3">
+                  <label class="col-md-4 col-lg-3 col-form-label small fw-bold">Manzil</label>
+                  <div class="col-md-8 col-lg-9">{{ p_form.address }}</div>
+                </div>
+
+                <div class="text-center mt-4">
+                  <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                    <i class="bi bi-save me-1"></i> Saqlash
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="tab-pane fade pt-3" id="profile-change-password">
+              <div class="alert alert-info border-0 shadow-sm small">
+                <i class="bi bi-info-circle me-2"></i> Parolni o'zgartirish uchun xavfsiz tizim sahifasiga o'ting.
+              </div>
+              <a href="/admin/password_change/" class="btn btn-outline-primary btn-sm rounded-pill shadow-sm">
+                 <i class="bi bi-shield-lock me-1"></i> Parolni hozir o'zgartirish
+              </a>
+            </div>
+
+          </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+    .bg-primary-light { background-color: #e7f1ff; }
+    .profile-card h2 { font-size: 24px; font-weight: 700; color: #2c3e50; margin: 10px 0 5px 0; }
+    .label { font-size: 0.85rem; }
+    /* Form elementlarini chiroyli qilish */
+    input, textarea, select {
+        border-radius: 8px !important;
+        border: 1px solid #dee2e6 !important;
+        padding: 8px 12px !important;
+    }
+    input:focus {
+        border-color: #4154f1 !important;
+        box-shadow: 0 0 0 0.2rem rgba(65, 84, 241, 0.1) !important;
+    }
+</style>
+{% endblock %}

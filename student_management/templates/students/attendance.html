@@ -1,0 +1,134 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1><i class="bi bi-calendar-check me-2"></i>Daily Attendance</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Home</a></li>
+            <li class="breadcrumb-item active">Attendance</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h5 class="card-title m-0">Date: <span class="text-primary">{{ today|date:"d F, Y" }}</span></h5>
+                        <div class="mt-1">
+                            <span class="badge bg-dark">
+                                <i class="bi bi-clock me-1"></i> Current Time: <span id="liveClock">--:--:--</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-info-light text-info p-2"><i class="bi bi-people me-1"></i> Total: {{ students.count }}</span>
+                    </div>
+                </div>
+                
+                <div class="card-body mt-3">
+                    <form method="POST" id="attendanceForm">
+                        {% csrf_token %}
+                        
+                        <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+                            <button type="button" onclick="selectAllPresent()" class="btn btn-sm btn-outline-primary shadow-sm rounded-pill px-3">
+                                <i class="bi bi-check-all"></i> Barchasini "Present" deb belgilash
+                            </button>
+                            <div class="text-muted small align-self-center">
+                                <i class="bi bi-info-circle me-1"></i> Belgilangan vaqt tizim tomonidan avtomatik saqlanadi.
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light text-secondary">
+                                    <tr>
+                                        <th style="width: 45%">Student Information</th>
+                                        <th class="text-center" style="width: 55%">Status Selection</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle me-3 bg-primary text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; border-radius: 50%; font-size: 0.9rem;">
+                                                    {{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}
+                                                </div>
+                                                <div>
+                                                    <h6 class="m-0 fw-bold text-dark">{{ student.first_name }} {{ student.last_name }}</h6>
+                                                    <small class="text-muted"><i class="bi bi-hash"></i> {{ student.id|stringformat:".8s" }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group w-100 shadow-sm" role="group">
+                                                <input type="radio" class="btn-check" name="status_{{ student.id }}" id="present_{{ student.id }}" value="present" {% if student.today_status == 'present' %}checked{% endif %} required>
+                                                <label class="btn btn-outline-success py-2 d-flex align-items-center justify-content-center" for="present_{{ student.id }}">
+                                                    <i class="bi bi-check2-circle me-1"></i> Present
+                                                </label>
+
+                                                <input type="radio" class="btn-check" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="absent" {% if student.today_status == 'absent' %}checked{% endif %}>
+                                                <label class="btn btn-outline-danger py-2 d-flex align-items-center justify-content-center" for="absent_{{ student.id }}">
+                                                    <i class="bi bi-x-circle me-1"></i> Absent
+                                                </label>
+
+                                                <input type="radio" class="btn-check" name="status_{{ student.id }}" id="late_{{ student.id }}" value="late" {% if student.today_status == 'late' %}checked{% endif %}>
+                                                <label class="btn btn-outline-warning py-2 d-flex align-items-center justify-content-center" for="late_{{ student.id }}">
+                                                    <i class="bi bi-clock me-1 text-dark"></i> Late
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card-footer bg-white border-0 text-center py-5">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 shadow rounded-pill">
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> Complete Attendance
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Radio tugmalari bosilgandagi holat */
+    .btn-check:checked + .btn-outline-success { background-color: #198754 !important; color: white !important; border-color: #198754; }
+    .btn-check:checked + .btn-outline-danger { background-color: #dc3545 !important; color: white !important; border-color: #dc3545; }
+    .btn-check:checked + .btn-outline-warning { background-color: #ffc107 !important; color: #000 !important; border-color: #ffc107; }
+    
+    .btn-group .btn { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .avatar-circle { border: 2px solid #fff; }
+    .table-responsive { overflow-x: auto; }
+</style>
+
+<script>
+    // 1. Real vaqtni ko'rsatish funksiyasi
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('liveClock').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Barchasini belgilash funksiyasi
+    function selectAllPresent() {
+        document.querySelectorAll('input[value="present"]').forEach(radio => {
+            radio.checked = true;
+        });
+    }
+</script>
+{% endblock %}

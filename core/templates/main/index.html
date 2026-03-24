@@ -1,0 +1,335 @@
+{% extends 'main/base.html' %} 
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard umumiy stillari */
+    .info-card h6 { font-size: 28px; color: #012970; font-weight: 700; margin: 0; padding: 0; }
+    .card-icon { font-size: 32px; line-height: 0; width: 64px; height: 64px; flex-shrink: 0; flex-grow: 0; }
+    .bg-primary-light { background-color: #f6f6fe; }
+    .bg-success-light { background-color: #e0f8e9; }
+    .bg-warning-light { background-color: #ffecdf; }
+    .bg-danger-light { background-color: #ffeded; }
+    .bg-info-light { background-color: #e0f7fa !important; color: #0dcaf0 !important; }
+    
+    .cursor-pointer { cursor: pointer; transition: 0.3s; }
+    .cursor-pointer:hover { transform: translateY(-5px); }
+
+    /* Xabarlar bo'limi */
+    .message-container::-webkit-scrollbar { width: 4px; }
+    .message-container::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+    .message-item { transition: 0.3s; border-radius: 15px !important; }
+    .message-item:hover { transform: translateX(5px); background-color: #f8f9ff !important; }
+    .border-left-primary { border-left: 5px solid #4361ee !important; }
+    .border-left-warning { border-left: 5px solid #ffc107 !important; }
+    .border-left-success { border-left: 5px solid #198754 !important; }
+    .animate-pulse { animation: pulse-red 2s infinite; }
+
+    /* Jadval stillari */
+    .bg-primary-light-custom { background-color: #eef2ff !important; color: #4361ee !important; }
+    .table thead th { font-weight: 600; letter-spacing: 0.5px; border-bottom: 2px solid #f8f9fa; }
+    .table tbody tr { transition: 0.2s; }
+    .table tbody tr:hover { background-color: #fcfdfe; transform: scale(1.002); }
+
+    /* To-do list stillari */
+    .form-check-input:checked + .form-check-label { text-decoration: line-through; opacity: 0.5; transition: 0.3s; }
+    .todo-container::-webkit-scrollbar { width: 3px; }
+    .todo-container::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1>Dashboard</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Asosiy</a></li>
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section dashboard">
+    <div class="row">
+        
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Talabalar <span>| Jami</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary-light text-primary">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ total_students }}</h6>
+                            <span class="text-success small pt-1 fw-bold">Faol</span> <span class="text-muted small">talabalar</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card revenue-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Davomat <span>| Bugun</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success-light text-success">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ attendance_rate }}%</h6>
+                            <span class="text-success small pt-1 fw-bold">Tizimda</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-xl-12">
+            <div class="card info-card customers-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">To'lovlar <span>| Oylik</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning-light text-warning">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>85%</h6>
+                            <span class="text-muted small">Tekshirildi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mt-3">
+            <div class="card shadow-sm border-0 text-center p-3 border-left-primary" style="border-radius: 15px;">
+                <div class="text-muted small text-uppercase fw-bold">Barcha xabarlar</div>
+                <h3 class="fw-bold mb-0 text-primary">{{ total_msg_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4 mt-3">
+            <div class="card shadow-sm border-0 text-center p-3 border-left-warning" style="border-radius: 15px;">
+                <div class="text-muted small text-uppercase fw-bold text-warning">O'qilmagan</div>
+                <h3 class="fw-bold mb-0 text-warning">{{ unread_msg_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4 mt-3">
+            <div class="card shadow-sm border-0 text-center p-3 border-left-success" style="border-radius: 15px;">
+                <div class="text-muted small text-uppercase fw-bold text-success">Bugungi xabarlar</div>
+                <h3 class="fw-bold mb-0 text-success">{{ today_msg_count }}</h3>
+            </div>
+        </div>
+
+        <div class="col-12 mt-4">
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-dark mb-3"><i class="bi bi-lightning-charge"></i> Tezkor amallar</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-2">
+                            <a href="{% url 'students:attendance' %}" class="card info-card p-3 d-flex flex-column align-items-center text-decoration-none shadow-sm h-100 border-0">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary text-white mb-2" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-calendar-check" style="font-size: 20px;"></i>
+                                </div>
+                                <h6 class="m-0 text-dark" style="font-size: 14px;">Davomat</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-2">
+                            <a href="{% url 'core:saved_news' %}" class="card info-card p-3 d-flex flex-column align-items-center text-decoration-none shadow-sm h-100 border-0">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning text-white mb-2" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-bookmark-star" style="font-size: 20px;"></i>
+                                </div>
+                                <h6 class="m-0 text-dark" style="font-size: 14px;">Saqlanganlar</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-2">
+                            <div class="card info-card p-3 d-flex flex-column align-items-center text-decoration-none shadow-sm h-100 border-0 cursor-pointer" data-bs-toggle="modal" data-bs-target="#addTimetableModal">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning text-white mb-2" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-calendar-plus" style="font-size: 20px;"></i>
+                                </div>
+                                <h6 class="m-0 text-dark" style="font-size: 14px;">Jadval qo'shish</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card info-card p-3 d-flex flex-row align-items-center text-decoration-none shadow-sm h-100 border-0 cursor-pointer" data-bs-toggle="modal" data-bs-target="#addNewsModal">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-danger text-white me-3" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-megaphone" style="font-size: 20px;"></i>
+                                </div>
+                                <div><h6 class="m-0 text-dark" style="font-size: 15px;">E'lon berish</h6><span class="text-muted small">Yangiliklar</span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card info-card p-3 d-flex flex-row align-items-center text-decoration-none shadow-sm h-100 border-0 cursor-pointer" data-bs-toggle="modal" data-bs-target="#addVideoModal">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-info text-white me-3" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-camera-video" style="font-size: 20px;"></i>
+                                </div>
+                                <div><h6 class="m-0 text-dark" style="font-size: 15px;">Video yuklash</h6><span class="text-muted small">Media</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 mt-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title m-0 mb-3">Haftalik Davomat | Faollik</h5>
+                    <div id="mainChart"></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0" style="border-radius: 20px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title m-0 text-dark fw-bold">
+                            <i class="bi bi-calendar3 me-2 text-primary"></i> Bugungi dars jadvali
+                        </h5>
+                        <button class="btn btn-sm btn-light rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addTimetableModal">
+                            <i class="bi bi-plus-lg me-1"></i> Yangi dars
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border-0">
+                            <thead class="bg-light">
+                                <tr class="text-muted small text-uppercase">
+                                    <th class="border-0 ps-3">Vaqt</th>
+                                    <th class="border-0">Guruh</th>
+                                    <th class="border-0 text-end pe-3">Holat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lesson in today_lessons %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <span class="badge bg-primary-light-custom fw-bold">{{ lesson.start_time|time:"H:i" }}</span>
+                                    </td>
+                                    <td><div class="fw-bold">{{ lesson.group.name }}</div></td>
+                                    <td class="text-end pe-3">
+                                        <span class="badge bg-success rounded-pill">Darsda</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="3" class="text-center py-4">Darslar yo'q</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mt-4">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 20px; background: linear-gradient(145deg, #ffffff, #f8f9ff);">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title m-0 text-dark fw-bold">
+                            <i class="bi bi-check2-square me-2 text-success"></i> Kun tartibi
+                        </h5>
+                        <button class="btn btn-sm btn-outline-success rounded-circle" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <div class="todo-container" style="max-height: 250px; overflow-y: auto;">
+                        <ul class="list-group list-group-flush">
+                            {% for task in tasks %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 bg-transparent">
+                                <div class="d-flex align-items-center w-100">
+                                    <input class="form-check-input me-3 border-success task-checkbox" type="checkbox" 
+                                           id="task{{ task.id }}" {% if task.is_completed %}checked{% endif %}
+                                           onchange="window.location.href='{% url 'core:toggle_task' task.id %}'">
+                                    
+                                    <label class="form-check-label text-dark small {% if task.is_completed %}text-decoration-line-through opacity-50{% endif %}" 
+                                           for="task{{ task.id }}">
+                                        {{ task.title }}
+                                    </label>
+                                    
+                                    <a href="{% url 'core:delete_task' task.id %}" class="ms-auto text-danger opacity-25" style="font-size: 14px;">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="text-center py-3 text-muted small">Vazifalar yo'q</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 20px;">
+    <div class="card-body p-4">
+        <h5 class="card-title m-0 text-success fw-bold mb-3">
+            <i class="bi bi-person-check-fill me-2"></i> Onlayn xodimlar
+        </h5>
+        <div class="d-flex flex-wrap gap-2">
+            {% for profile in online_profiles %}
+            <div class="position-relative">
+                {% if profile.user.profile_pic %}
+                    <img src="{{ profile.user.profile_pic.url }}" alt="Profile" class="rounded-circle border border-2 border-white shadow-sm" width="45" height="45" title="{{ profile.user.get_full_name }}">
+                {% else %}
+                    <img src="{% static 'assets/img/user-default.png' %}" alt="Profile" class="rounded-circle border border-2 border-white shadow-sm" width="45" height="45" title="{{ profile.user.get_full_name }}">
+                {% endif %}
+                <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" style="width: 12px; height: 12px;"></span>
+            </div>
+            {% empty %}
+            <p class="text-muted small">Hozirda hech kim onlayn emas</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+            
+
+            <div class="card shadow-sm border-0" style="border-radius: 20px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title m-0 text-primary fw-bold">
+                            <i class="bi bi-envelope-paper-fill me-2"></i> Yangi xabarlar
+                        </h5>
+                        {% if unread_msg_count > 0 %}
+                            <span class="badge rounded-pill bg-danger animate-pulse">{{ unread_msg_count }} ta yangi</span>
+                        {% endif %}
+                    </div>
+                    <div class="message-container" style="max-height: 500px; overflow-y: auto;">
+                        {% for msg in user_messages %}
+                        <a href="{% url 'core:read_message' msg.id %}" class="text-decoration-none mb-3 d-block">
+                            <div class="message-item p-3 {% if not msg.is_read %}bg-white border-left-primary shadow-sm{% else %}bg-light{% endif %}">
+                                <div class="d-flex justify-content-between small">
+                                    <strong class="text-dark">{{ msg.full_name|truncatechars:15 }}</strong>
+                                    <span class="text-muted">{{ msg.created_at|timesince }} oldin</span>
+                                </div>
+                                <p class="text-muted mb-0 small text-truncate">{{ msg.subject }}</p>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted small">Xabarlar yo'q</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Yangi vazifa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'core:add_task' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="text" name="title" class="form-control rounded-pill bg-light border-0 px-3" placeholder="Nima qilish kerak?" required>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-success w-100 rounded-pill fw-bold">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

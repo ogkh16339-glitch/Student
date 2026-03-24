@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.title }} | Edura News</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --primary-gradient: linear-gradient(135deg, #3a7bd5, #00d2ff);
+            --dark-blue: #2c3e50;
+            --soft-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        /* 🌙 DARK MODE STILLARI */
+        body.dark-mode {
+            --soft-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            background-color: var(--soft-bg);
+            color: var(--text-color);
+        }
+
+        body { 
+            background: var(--soft-bg); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: var(--text-color);
+            line-height: 1.7;
+            transition: 0.3s;
+        }
+
+        .nav-header {
+            padding: 20px 0;
+            background: var(--card-bg);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 35px;
+            padding: 40px;
+            margin-top: -60px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .dark-mode .comment-box { background: #334155 !important; color: white; }
+        .dark-mode .text-muted { color: #94a3b8 !important; }
+        
+        .detail-hero-img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .meta-info { display: flex; gap: 20px; color: #64748b; font-weight: 600; font-size: 0.9rem; margin-bottom: 20px; }
+        .article-title { font-weight: 800; font-size: 2.5rem; color: var(--text-color); margin-bottom: 25px; }
+
+        .btn-action { transition: 0.3s; border-radius: 15px; padding: 10px 25px; font-weight: 700; border: 1px solid #eee; background: var(--card-bg); color: var(--text-color); }
+        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        /* Bookmark active color */
+        .btn-bookmark.active { background: #e0f2fe; color: #0ea5e9; border-color: #bae6fd; }
+
+        #darkModeToggle { width: 45px; height: 45px; border-radius: 50% !important; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    </style>
+
+    <style>
+    /* Share blokining chiziqli chegarasi */
+    .border-dashed {
+        border-style: dashed !important;
+    }
+
+    /* Tugmalar dizayni */
+    .btn-telegram-share { background: #0088cc; color: white; border-radius: 12px; font-weight: 600; border: none; transition: 0.3s; }
+    .btn-telegram-share:hover { background: #0077b5; color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 136, 204, 0.3); }
+
+    .btn-whatsapp-share { background: #25d366; color: white; border-radius: 12px; font-weight: 600; border: none; transition: 0.3s; }
+    .btn-whatsapp-share:hover { background: #1ebe57; color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); }
+
+    .btn-light-share { background: var(--card-bg); color: var(--text-color); border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; font-weight: 600; transition: 0.3s; }
+    .btn-light-share:hover { background: #f1f5f9; transform: translateY(-3px); border-color: #3a7bd5; }
+
+    /* Dark Mode moslashuvi */
+    body.dark-mode .share-box { background: rgba(255, 255, 255, 0.03) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+    body.dark-mode .btn-light-share { background: #334155; color: white; border-color: rgba(255, 255, 255, 0.1); }
+</style>
+</head>
+<body>
+
+<nav class="nav-header shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'core:news_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i>Orqaga
+            </a>
+            <button id="darkModeToggle" class="btn btn-outline-primary border-0 shadow-sm">
+                <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+            </button>
+        </div>
+        <h5 class="mb-0 fw-bold text-primary d-none d-md-block">EDURA NEWS</h5>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            {% if item.image %}
+                <img src="{{ item.image.url }}" class="detail-hero-img mb-4" alt="{{ item.title }}">
+            {% else %}
+                <div class="detail-hero-img bg-secondary d-flex align-items-center justify-content-center text-white mb-4" style="height: 400px;">
+                    <i class="bi bi-image display-1 opacity-25"></i>
+                </div>
+            {% endif %}
+
+            <div class="content-card">
+                <div class="meta-info">
+                    <span><i class="bi bi-calendar3 me-2"></i>{{ item.created_at|date:"d-M, Y" }}</span>
+                    <span><i class="bi bi-eye me-2"></i>{{ item.views_count }} marta ko'rildi</span>
+                    <span><i class="bi bi-person me-2"></i>{{ item.author.get_full_name|default:"Admin" }}</span>
+                </div>
+
+                <h1 class="article-title">{{ item.title }}</h1>
+
+                <div class="article-text mb-5">
+                    {{ item.content|linebreaks }}
+                </div>
+
+                <hr class="opacity-10 my-5">
+
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-5">
+                    <h4 class="fw-bold mb-0">Maqola sizga yoqdimi?</h4>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'core:like_news' item.pk %}" class="btn btn-action text-danger border-danger-subtle">
+                            <i class="bi bi-heart-fill me-2"></i> {{ item.likes.count }} Like
+                        </a>
+                        <button id="bookmarkBtn" class="btn btn-action btn-bookmark">
+                            <i class="bi bi-bookmark-plus me-2" id="bookmarkIcon"></i> Saqlash
+                        </button>
+                    </div>
+                </div>
+
+                <section class="comments-section">
+                    <h3 class="fw-800 mb-4">Fikrlar ({{ item.comment_set.count }})</h3>
+                    {% if user.is_authenticated %}
+                    <form action="{% url 'core:add_comment' item.pk %}" method="POST" class="mb-5">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="comment_text" class="form-control rounded-4 p-3 border-2" rows="3" placeholder="O'z fikringizni yozing..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow">Yuborish</button>
+                    </form>
+                    {% endif %}
+
+                    <div class="comments-list">
+                        {% for comment in item.comment_set.all %}
+                        <div class="comment-box d-flex gap-3 shadow-sm border p-3 mb-3 rounded-4" style="background: var(--card-bg);">
+                            <div class="user-avatar shadow-sm" style="width: 45px; height: 45px; background: var(--primary-gradient); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                {{ comment.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ comment.user.username }}</h6>
+                                <p class="mb-1 opacity-75 small">{{ comment.text }}</p>
+                                <small class="text-uppercase opacity-50 fw-bold" style="font-size: 0.7rem;">{{ comment.created_at|timesince }} oldin</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="article-text mb-5">
+    {{ item.content|linebreaks }}
+</div>
+
+<div class="share-box p-4 mb-5 rounded-4 border-dashed shadow-sm" style="background: rgba(58, 123, 213, 0.03); border: 2px dashed rgba(58, 123, 213, 0.1);">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <h6 class="fw-bold mb-1 text-primary text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">
+                Do'stlaringizga ulashing
+            </h6>
+            <p class="small text-muted mb-0">Bilim ulashish — foydali!</p>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ item.title|urlencode }}" 
+                target="_blank" 
+                class="btn btn-telegram-share shadow-sm px-3 py-2">
+                 <i class="bi bi-telegram me-2"></i> Telegram
+            </a>
+
+            <a href="https://api.whatsapp.com/send?text={{ item.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" 
+               target="_blank" 
+               class="btn btn-whatsapp-share shadow-sm px-3 py-2">
+                <i class="bi bi-whatsapp me-2"></i> WhatsApp
+            </a>
+
+            <button onclick="copyToClipboard('{{ full_url }}')" id="copyBtn" class="btn btn-light-share shadow-sm px-3">
+                <i class="bi bi-link-45deg me-1"></i> Havolani nusxalash
+            </button>
+        </div>
+    </div>
+</div>
+
+<hr class="opacity-10 my-5">
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-5">
+    </div>
+
+
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="py-5 text-center text-muted">
+    <p class="small">© 2026 Edura LMS — Bilimlar platformasi</p>
+</footer>
+
+<script>
+    // 1. Dark Mode Mantiqi
+    const toggleBtn = document.getElementById('darkModeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const body = document.body;
+
+    function setTheme(isDark) {
+        if (isDark) {
+            body.classList.add('dark-mode');
+            themeIcon.className = 'bi bi-sun-fill text-warning';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.classList.remove('dark-mode');
+            themeIcon.className = 'bi bi-moon-stars-fill text-primary';
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        setTheme(!body.classList.contains('dark-mode'));
+    });
+
+    if (localStorage.getItem('theme') === 'dark') setTheme(true);
+
+    // 2. Bookmark AJAX Mantiqi (YANGILANGAN)
+    const bookmarkBtn = document.getElementById('bookmarkBtn');
+
+    bookmarkBtn.addEventListener('click', function() {
+        const newsId = "{{ item.pk }}"; // Django maqola IDsi
+        
+        fetch(`/news/bookmark/${newsId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Django xavfsizlik tokeni
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'added') {
+                this.classList.add('active');
+                this.innerHTML = '<i class="bi bi-bookmark-check-fill me-2"></i> Saqlandi';
+            } else if (data.status === 'removed') {
+                this.classList.remove('active');
+                this.innerHTML = '<i class="bi bi-bookmark-plus me-2"></i> Saqlash';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+
+</body>
+</html>
+
+<script>
+function copyToClipboard() {
+    // Joriy sahifa URL manzilini olamiz
+    const url = window.location.href;
+    
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const originalContent = btn.innerHTML;
+        
+        // Vizual tasdiq
+        btn.innerHTML = '<i class="bi bi-check2 text-success me-1"></i> Nusxalandi!';
+        btn.style.borderColor = '#198754';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.style.borderColor = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Xatolik:', err);
+    });
+}
+</script>
+
+{% if yt_video %}
+<div class="youtube-block p-4 rounded-4 shadow-sm bg-white border mt-5">
+    <h4 class="fw-800 mb-3 text-danger">
+        <i class="bi bi-youtube me-2"></i> {{ yt_video.title }}
+    </h4>
+    <div class="video-container">
+        <iframe 
+            src="https://www.youtube.com/embed/videoseries?list={{ yt_video.playlist_id }}" 
+            allowfullscreen>
+        </iframe>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        border-radius: 20px;
+        background: #000; /* Video yuklanguncha qora fon */
+    }
+    .video-container iframe {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%; border: none;
+    }
+    /* Dark mode uchun moslashuv */
+    .dark-mode .youtube-block {
+        background: #1e293b !important;
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+</style>

@@ -1,0 +1,83 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1>Xabarni o'qish</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Asosiy</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:all_messages' %}">Xabarlar</a></li>
+            <li class="breadcrumb-item active">Xabar tafsiloti</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                        <div>
+                            <h3 class="fw-bold mb-1 text-primary">{{ msg.subject }}</h3>
+                            <span class="text-muted"><i class="bi bi-clock me-1"></i>{{ msg.created_at|date:"d-M, Y | H:i" }}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success-light text-success rounded-pill px-3 py-2">
+                                <i class="bi bi-check-circle me-1"></i> read
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4 bg-light p-3 rounded-4 mx-0">
+                        <div class="col-md-6">
+                            <p class="mb-0 text-muted small">Yuboruvchi:</p>
+                            <h6 class="fw-bold mb-0">{{ msg.full_name }}</h6>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p class="mb-0 text-muted small">Email manzil:</p>
+                            <a href="mailto:{{ msg.email }}" class="text-decoration-none fw-bold">{{ msg.email }}</a>
+                        </div>
+                    </div>
+
+                    <div class="message-content p-4 border rounded-4 bg-white" style="min-height: 250px; line-height: 1.8; white-space: pre-wrap; font-size: 1.1rem; color: #444;">
+                        {{ msg.message }}
+                    </div>
+
+                    <div class="mt-4 pt-3 d-flex gap-2">
+                        <a href="{% url 'core:all_messages' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Orqaga qaytish
+                        </a>
+                        <a href="mailto:{{ msg.email }}" class="btn btn-primary rounded-pill px-4 shadow">
+                            <i class="bi bi-reply me-1"></i> Javob yuborish
+                        </a>
+                        <button class="btn btn-danger rounded-pill px-4 ms-auto" onclick="confirmDelete()">
+                            <i class="bi bi-trash"></i> O'chirish
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmDelete() {
+        Swal.fire({
+            title: 'Ishonchingiz komilmi?',
+            text: "Ushbu xabar butunlay o'chiriladi!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ha, o\'chirish!',
+            cancelButtonText: 'Bekor qilish'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{% url 'core:delete_message' msg.pk %}";
+            }
+        })
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* O'qilmagan xabarlar uchun yorqinroq stil */
+    .unread { background-color: #f0f2ff !important; font-weight: 600; border-left: 4px solid #4154f1 !important; }
+    .status-dot { height: 10px; width: 10px; background-color: #4154f1; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .search-box input { border-radius: 20px; padding-left: 40px; transition: 0.3s; }
+    .search-box input:focus { box-shadow: 0 0 10px rgba(65, 84, 241, 0.2); border-color: #4154f1; }
+    .search-box i { position: absolute; left: 15px; top: 10px; color: #adb5bd; z-index: 5; }
+    .message-card { transition: all 0.3s; border-radius: 15px; }
+    .message-card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; }
+    .avatar-sm { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+    .bg-primary-light { background-color: #e7e9ff; color: #4154f1; }
+    
+    /* Pagination tugmalari uchun qo'shimcha stil */
+    .page-link { color: #4154f1; }
+    .page-item.active .page-link { background-color: #4154f1; border-color: #4154f1; color: white; }
+
+    /* Yulduzcha (Star) uchun stil */
+    .star-btn { cursor: pointer; color: #ccc; transition: 0.3s; font-size: 18px; }
+    .star-btn.starred { color: #ffc107; }
+    .star-btn:hover { transform: scale(1.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pagetitle d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Xabarlar Markazi</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Asosiy</a></li>
+                <li class="breadcrumb-item active">Xabarlar</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="search-box position-relative w-25">
+        <form action="{% url 'core:all_messages' %}" method="get">
+            <i class="bi bi-search"></i>
+            <input type="text" name="q" class="form-control shadow-sm" 
+                   placeholder="Search..." value="{{ query|default:'' }}">
+        </form>
+    </div>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card message-card shadow-sm border-0">
+                <div class="card-body p-4">
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'core:all_messages' %}" class="btn btn-sm {% if not request.GET.filter %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4">All</a>
+                            <a href="?filter=unread" class="btn btn-sm {% if request.GET.filter == 'unread' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-4">Unread Messages</a>
+                            <a href="?filter=starred" class="btn btn-sm {% if request.GET.filter == 'starred' %}btn-warning text-white{% else %}btn-outline-warning{% endif %} rounded-pill px-4">Starred</a>
+                        </div>
+                        {% if query %}
+                            <span class="badge bg-light text-dark p-2">Natija: "{{ query }}"</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="text-muted small text-uppercase">
+                                    <th style="width: 70px;">Status</th>
+                                    <th>Sender</th>
+                                    <th>Subject & Summary</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for msg in messages %}
+                                <tr class="{% if not msg.is_read %}unread{% endif %}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-star-fill star-btn me-2 {% if msg.is_starred %}starred{% endif %}" 
+                                               onclick="toggleStar(this, '{{ msg.id }}')" title="Muhim deb belgilash"></i>
+                                            {% if not msg.is_read %}<span class="status-dot" title="Yangi xabar"></span>{% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2 bg-primary-light rounded-circle">
+                                                {{ msg.full_name|slice:":1" }}
+                                            </div>
+                                            <div>
+                                                <div class="text-dark fw-bold text-nowrap">{{ msg.full_name }}</div>
+                                                <div class="text-muted small">{{ msg.email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-dark mb-0">{{ msg.subject }}</div>
+                                        <div class="text-muted small text-truncate" style="max-width: 350px;">{{ msg.message }}</div>
+                                    </td>
+                                    <td class="small text-muted text-nowrap">
+                                        {{ msg.created_at|date:"H:i" }}<br>
+                                        {{ msg.created_at|date:"d.m.Y" }}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'core:read_message' msg.pk %}" class="btn btn-light btn-sm rounded-circle shadow-sm" title="O'qish">
+                                            <i class="bi bi-eye text-primary"></i>
+                                        </a>
+                                        <button class="btn btn-light btn-sm rounded-circle shadow-sm ms-1" 
+                                                onclick="deleteMessage('{{ msg.id }}', '{% url 'core:delete_message' msg.id %}')" title="O'chirish">
+                                            <i class="bi bi-trash text-danger"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block opacity-25"></i>
+                                        Hozircha xabarlar yo'q
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if messages.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if messages.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link border-0 shadow-sm rounded-circle me-2" 
+                                       href="?page={{ messages.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link border-0 shadow-sm rounded-circle px-3">
+                                    {{ messages.number }}
+                                </span>
+                            </li>
+
+                            {% if messages.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link border-0 shadow-sm rounded-circle ms-2" 
+                                       href="?page={{ messages.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    <div class="text-center text-muted small mt-2">
+                        Jami: {{ messages.paginator.count }} ta xabar
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Xabarni o'chirish funksiyasi
+    function deleteMessage(id, deleteUrl) {
+        Swal.fire({
+            title: 'Ishonchingiz komilmi?',
+            text: "Xabarni o'chirib yuborsangiz, uni qayta tiklay olmaysiz!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ha, o\'chirish!',
+            cancelButtonText: 'Bekor qilish',
+            borderRadius: '15px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = deleteUrl;
+            }
+        })
+    }
+
+    // Yulduzcha (Star) toggle funksiyasi
+    function toggleStar(element, msgId) {
+        fetch(`/message/star/${msgId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                element.classList.toggle('starred');
+                // Foydalanuvchiga kichik bildirishnoma (ixtiyoriy)
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
+                    icon: 'success',
+                    title: data.is_starred ? 'Muhimga qo\'shildi' : 'Muhimdan olindi'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Xato!', 'Amalni bajarib bo\'lmadi', 'error');
+        });
+    }
+</script>
+{% endblock %}

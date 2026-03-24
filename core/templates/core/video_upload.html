@@ -1,0 +1,46 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-video me-2"></i> Yangi video yuklash</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Video sarlavhasi</label>
+                            <input type="text" name="title" class="form-control" placeholder="Masalan: Python darslari" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Video haqida qisqacha</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Video mazmunini tushuntiring..." required></textarea>
+                            <small class="text-muted">Tavsif yozish majburiy.</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">YouTube Link (ixtiyoriy)</label>
+                                <input type="url" name="video_url" class="form-control" placeholder="https://youtube.com/...">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Video fayli (MP4, MKV)</label>
+                                <input type="file" name="video_file" class="form-control" accept="video/*">
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-cloud-upload-alt me-2"></i> Saqlash va yuklash
+                            </button>
+                            <a href="{% url 'core:dashboard' %}" class="btn btn-light">Bekor qilish</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
