@@ -1,0 +1,171 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<style>
+    /* 1. Sidebar va menyularni yashirish */
+    aside, .sidebar, #sidebar, .left-menu, .vertical-nav { 
+        display: none !important; 
+    }
+
+    main, .main-content, #main, .content-wrapper {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        width: 100% !important;
+        border-left: none !important;
+    }
+
+    .test-body { 
+        background:#f5f5f5; 
+        margin:0; 
+        padding-bottom: 50px; 
+        min-height: 100vh;
+    }
+
+    /* Taymer uslubi */
+    #timer-container {
+        position: fixed; 
+        top: 20px; 
+        right: 20px; 
+        background: #3a2f26; 
+        color: white; 
+        padding: 12px 25px; 
+        border-radius: 50px; 
+        font-weight: bold; 
+        z-index: 1000; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        font-family: monospace;
+        font-size: 18px;
+    }
+
+    .header { 
+        background:#ffffff; 
+        padding:25px; 
+        text-align:center; 
+        font-size:22px; 
+        font-weight: 800; 
+        color: #2d3436;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 30px;
+    }
+
+    .container-test { 
+        max-width: 850px; 
+        margin: 0 auto; 
+        padding: 0 20px;
+    }
+
+    .question { 
+        background:white; 
+        padding:30px; 
+        margin-bottom:30px; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border-radius: 12px;
+    }
+
+    .question-title { 
+        font-size:20px; 
+        margin-bottom:25px; 
+        color: #2d3436;
+        line-height: 1.6;
+        font-weight: 600;
+    }
+
+    .option { 
+        display: flex;
+        align-items: center;
+        padding: 18px; 
+        margin: 12px 0; 
+        background:#ffffff; 
+        border-radius: 10px; 
+        cursor:pointer; 
+        transition: all 0.2s ease; 
+        border: 2px solid #f1f2f6;
+    }
+
+    .option:hover { 
+        background:#f8f9fa; 
+        border-color: #3a2f26;
+    }
+
+    .option input { 
+        margin-right:15px; 
+        width: 18px;
+        height: 18px;
+        accent-color: #ff6b3d;
+    }
+
+    .submit-btn { 
+        width: 100%; 
+        padding: 20px; 
+        background: #ff6b3d; 
+        border: none; 
+        color: white; 
+        font-size: 20px; 
+        font-weight: 800; 
+        border-radius: 12px; 
+        cursor: pointer; 
+        transition: 0.3s;
+        box-shadow: 0 6px 20px rgba(255, 107, 61, 0.25);
+    }
+</style>
+
+<div id="timer-container">
+    ⏱ <span id="timer">--:--</span>
+</div>
+
+<div class="test-body">
+    <div class="header">
+        {{ quiz.subject.name }}: {{ quiz.title }}
+    </div>
+
+    <div class="container-test">
+        <form id="quiz-form" method="POST">
+            {% csrf_token %}
+            
+            {% for question in questions %}
+            <div class="question">
+                <div class="question-title">
+                    <span style="color: #ff6b3d;">{{ forloop.counter }}.</span> {{ question.text }}
+                </div>
+
+                {% for answer in question.answers.all %}
+                <label class="option">
+                    <input type="radio" name="question_{{ question.id }}" value="{{ answer.id }}" required>
+                    <span>{{ answer.text }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="submit-btn">Testni yakunlash</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Taymer logikasi
+    let duration = parseInt("{{ request.GET.duration|default:20 }}");
+    let timeLeft = duration * 60;
+
+    const timerDisplay = document.getElementById('timer');
+    const quizForm = document.getElementById('quiz-form');
+
+    function updateTimer() {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+
+        timerDisplay.innerHTML = 
+            `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert("Vaqt tugadi! Natijalar avtomatik yuboriladi.");
+            quizForm.submit();
+        }
+        timeLeft--;
+    }
+
+    updateTimer(); // Birinchi marta darhol ishga tushirish
+    const timerInterval = setInterval(updateTimer, 1000);
+</script>
+{% endblock %}

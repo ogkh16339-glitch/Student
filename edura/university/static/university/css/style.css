@@ -1,0 +1,53 @@
+{% extends 'main/base.html' %} 
+{% load static %}
+
+
+<div class="minimal-page-wrapper">
+    <header class="clean-hero">
+        <div class="container">
+            <h1>Oliy ta'lim muassasalari</h1>
+            <p>2026-yilgi qabul kvotalari va o'tish ballari</p>
+            
+            <div class="premium-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="uniSearch" placeholder="Universitet yoki yo'nalish nomi...">
+                <button class="search-confirm">Qidirish</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container main-content-centered">
+        <section class="uni-display-section">
+            <div class="grid-header">
+                <h3>Barcha natijalar: <span>{{ universities.count }} ta</span></h3>
+            </div>
+
+            <div class="modern-card-container">
+                {% for uni in universities %}
+                <a href="{% url 'university_detail' uni.slug %}" class="uni-node-card">
+                    <div class="node-image">
+                        {% if uni.image %}
+                            <img src="{{ uni.image.url }}" alt="{{ uni.name }}">
+                        {% else %}
+                            <div class="node-placeholder">ABT</div>
+                        {% endif %}
+                        <div class="node-tag">{{ uni.region }}</div>
+                    </div>
+                    <div class="node-body">
+                        <h4>{{ uni.name }}</h4>
+                        <div class="node-footer">
+                            <span>Batafsil ma'lumot</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="empty-state-box">
+                    <p>Ma'lumotlar topilmadi</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<style>
+    /* 1. Sidebar'ni butunlay yashirish */
+    aside, .sidebar, #sidebar, .left-menu { 
+        display: none !important; 
+    }
+
+    /* 2. Asosiy kontentni (main content) chapga surilmasligini ta'minlash */
+    main, .main-content, #main, .content-wrapper {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Sahifani markazlashtirish */
+    .quiz-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 90vh; /* Navbar'ni hisobga olmaganda deyarli butun ekran */
+        background: #f8f9fa; /* Orqa fon biroz yumshoqroq */
+    }
+
+    .card {
+        width: 100%;
+        max-width: 480px;
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .card h2 {
+        margin-top: 0;
+        margin-bottom: 30px;
+        color: #2d3436;
+        font-size: 26px;
+        text-align: center;
+        font-weight: 800;
+    }
+
+    label {
+        display: block;
+        font-size: 13px;
+        color: #636e72;
+        margin-bottom: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    select {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 25px;
+        border: 2px solid #eee;
+        border-radius: 8px;
+        background-color: #fff;
+        font-size: 15px;
+        color: #2d3436;
+        transition: border-color 0.3s;
+    }
+
+    select:focus {
+        border-color: #2bbbad;
+        outline: none;
+    }
+
+    .topics {
+        background: #fdfdfd;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        max-height: 180px;
+        overflow-y: auto;
+        border: 2px solid #eee;
+    }
+
+    .topics label {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        padding: 12px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        border: 1px solid #f1f1f1;
+        text-transform: none; /* Mavzular uchun katta harf kerak emas */
+        font-weight: 500;
+        color: #2d3436;
+    }
+
+    .topics label:hover {
+        background: #f1f2f6;
+        border-color: #2bbbad;
+    }
+
+    .topics input[type="radio"] {
+        margin-right: 15px;
+        width: 18px;
+        height: 18px;
+        accent-color: #2bbbad;
+    }
+
+    button {
+        width: 100%;
+        padding: 16px;
+        background: #2bbbad;
+        border: none;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(43, 187, 173, 0.3);
+    }
+
+    button:hover {
+        background: #239b8e;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(43, 187, 173, 0.4);
+    }
+</style>
+
+<div class="quiz-wrapper">
+    <div class="card">
+        <h2>Mavzuli testlar</h2>
+
+        <form id="quizForm" method="GET">
+            <label>Fanni tanlang</label>
+            <select name="subject" onchange="this.form.submit()">
+                <option value="">-- Barcha fanlar --</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"i" %}selected{% endif %}>
+                        {{ subject.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label>Mavzuni tanlang</label>
+            <div class="topics">
+                {% for quiz in quizzes %}
+                    <label>
+                        <input type="radio" name="selected_quiz" value="{{ quiz.id }}" required> 
+                        {{ quiz.title }}
+                    </label>
+                {% empty %}
+                    <p style="font-size: 13px; color: #b2bec3; text-align: center; padding: 20px;">
+                        Ushbu fanda mavzular mavjud emas.
+                    </p>
+                {% endfor %}
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label>Savollar</label>
+                    <select id="q_count">
+                        <option value="10">10 ta</option>
+                        <option value="20">20 ta</option>
+                        <option value="30">30 ta</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Vaqt</label>
+                    <select id="duration">
+                        <option value="20">20 min</option>
+                        <option value="30">30 min</option>
+                        <option value="40">40 min</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="button" onclick="startQuiz()">Testni boshlash</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function startQuiz() {
+    const selectedQuiz = document.querySelector('input[name="selected_quiz"]:checked');
+    const qCount = document.getElementById('q_count').value;
+    const duration = document.getElementById('duration').value;
+
+    if (!selectedQuiz) {
+        alert("Iltimos, avval test mavzusini tanlang!");
+        return;
+    }
+
+    const url = `/quiz/${selectedQuiz.value}/?q_count=${qCount}&duration=${duration}`;
+    window.location.href = url;
+}
+</script>
+{% endblock %}

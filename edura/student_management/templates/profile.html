@@ -1,0 +1,292 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'vendor/cropperjs/dist/cropper.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/sweetalert2/dist/sweetalert2.min.css' %}" rel="stylesheet">
+<style>
+    .profile-card img { width: 140px; height: 140px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+    .gpa-card { background: linear-gradient(45deg, #f8f9fa, #ffffff); border-left: 5px solid #4154f1; border-radius: 12px; }
+    .gpa-value { font-size: 2.2rem; font-weight: 800; color: #012970; }
+    .progress-overall { height: 10px; border-radius: 10px; }
+    .nav-tabs-bordered .nav-link.active { color: #4154f1; border-color: #4154f1; }
+    #imagePreview { max-width: 100%; display: block; }
+    .course-badge { background-color: #f1f3ff; color: #4154f1; font-weight: 600; padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1>Talaba Profili</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'students:student_list' %}">Students</a></li>
+            <li class="breadcrumb-item active">{{ student.first_name }}</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section profile">
+    <div class="row">
+        <div class="col-xl-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body profile-card pt-4 d-flex flex-column align-items-center text-center">
+                    {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="Profile" class="rounded-circle mb-3 border border-3 border-light">
+                    {% else %}
+                        <img src="{% static 'img/profile-img.png' %}" alt="Default" class="rounded-circle mb-3 border border-3 border-light">
+                    {% endif %}
+                    
+                    <button class="btn btn-primary btn-sm rounded-pill mb-3" data-bs-toggle="modal" data-bs-target="#imageModal">
+                        <i class="bi bi-camera me-1"></i> Change Picture
+                    </button>
+
+                    <h4 class="fw-bold mb-1">{{ student.first_name }} {{ student.last_name }}</h4>
+                    
+                    <div class="mb-2">
+                        <span class="course-badge">
+                            <i class="bi bi-mortarboard me-1"></i> {{ student.get_current_academic_level_display }}
+                        </span>
+                    </div>
+
+                    <p class="text-muted small mb-3">ID: #{{ student.id|stringformat:".8s" }}</p>
+                    
+                    <div class="mb-3">
+                        <span class="badge {% if student.enrollment_status == 'active' %}bg-success{% else %}bg-secondary{% endif %} px-3 py-2">
+                            {{ student.get_enrollment_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="d-flex gap-2 w-100 justify-content-center">
+                        <a href="{% url 'students:student_edit' student.pk %}" class="btn btn-warning btn-sm text-white px-3">
+                            <i class="bi bi-pencil"></i> Change 
+                        </a>
+                        <button class="btn btn-outline-danger btn-sm px-3" data-bs-toggle="modal" data-bs-target="#deleteStudentModal">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8">
+            <div class="card gpa-card shadow-sm mb-4">
+                <div class="card-body py-3">
+                    <div class="row align-items-center text-center text-md-start">
+                        <div class="col-md-4 border-end">
+                            <span class="text-muted small text-uppercase fw-bold">All GPA</span>
+                            <div class="gpa-value">{{ student.get_gpa }}%</div>
+                        </div>
+                        <div class="col-md-8 ps-md-4 mt-3 mt-md-0">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-bold">Academic Performance</span>
+                                <span class="small fw-bold text-primary">{{ student.get_current_academic_level_display }}</span>
+                            </div>
+                            <div class="progress progress-overall mb-2">
+                                <div class="progress-bar {% if student.get_gpa >= 85 %}bg-success{% elif student.get_gpa >= 60 %}bg-info{% else %}bg-danger{% endif %}" 
+                                     style="width: {{ student.get_gpa }}%"></div>
+                            </div>
+                            <p class="small text-muted mb-0">Now <strong>{{ student.get_current_academic_level_display }}</strong> Level</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body pt-3">
+                    <ul class="nav nav-tabs nav-tabs-bordered" id="profileTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#info">Information</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#grades">Marks</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#attendance">Attendance</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-4">
+                        <div class="tab-pane fade show active" id="info">
+                            <div class="row mb-3">
+                                <div class="col-lg-4 col-md-4 label text-muted">Current Stage:</div>
+                                <div class="col-lg-8 col-md-8 fw-bold text-primary">{{ student.get_current_academic_level_display }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-lg-4 col-md-4 label text-muted">Tug'ilgan sana:</div>
+                                <div class="col-lg-8 col-md-8 fw-bold">{{ student.birth_date|date:"d F, Y" }}-yil</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-lg-4 col-md-4 label text-muted">Yosh:</div>
+                                <div class="col-lg-8 col-md-8 fw-bold">{{ student.age }} yoshda</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-lg-4 col-md-4 label text-muted">Jinsi:</div>
+                                <div class="col-lg-8 col-md-8 fw-bold">{{ student.get_gender_display }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-lg-4 col-md-4 label text-muted">To'liq ID:</div>
+                                <div class="col-lg-8 col-md-8"><code>{{ student.id }}</code></div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="grades">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Subject Name</th>
+                                            <th class="text-center">Mark</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for grade in student.grades.all %}
+                                        <tr>
+                                            <td class="fw-bold">{{ grade.subject.name }}</td>
+                                            <td class="text-center"><span class="badge bg-primary fs-6">{{ grade.score }}</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 5px; width: 80px;">
+                                                    <div class="progress-bar bg-success" style="width: {{ grade.score }}%"></div>
+                                                </div>
+                                            </td>
+                                            <td class="small text-muted">{{ grade.date|date:"d.m.Y" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="4" class="text-center py-4 text-muted">No grades available.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="attendance">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Sana</th>
+                                            <th>Holat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for att in student.attendances.all %}
+                                        <tr>
+                                            <td>{{ att.date|date:"d.m.Y" }}</td>
+                                            <td>
+                                                <span class="badge {% if att.status == 'present' %}bg-success{% elif att.status == 'absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                                    {{ att.get_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="2" class="text-center py-4 text-muted">No attendance records found.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Edit Profile Picture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="browse-section" class="text-center py-5">
+                    <label for="uploadImage" class="btn btn-primary btn-lg">
+                        <i class="bi bi-upload me-2"></i> Choose Image
+                    </label>
+                    <input type="file" id="uploadImage" accept="image/*" style="display:none"/>
+                </div>
+                <div id="image-container" style="display: none;">
+                    <img src="" id="imagePreview">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSave" class="btn btn-success" style="display: none;">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+                <h5 class="fw-bold mt-3">Are you sure you want to delete?</h5>
+                <form action="{% url 'students:student_delete' student.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Bekor qilish</button>
+                        <button type="submit" class="btn btn-danger">Delate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'vendor/cropperjs/dist/cropper.min.js' %}"></script>
+<script src="{% static 'vendor/sweetalert2/dist/sweetalert2.all.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadImage = document.querySelector("#uploadImage");
+    const imagePreview = document.querySelector("#imagePreview");
+    const btnSave = document.querySelector("#btnSave");
+    const browseSection = document.querySelector("#browse-section");
+    const imageContainer = document.querySelector("#image-container");
+    let cropper = null;
+
+    uploadImage.addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                browseSection.style.display = "none";
+                imageContainer.style.display = "block";
+                btnSave.style.display = "inline-block";
+                imagePreview.src = event.target.result;
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(imagePreview, { aspectRatio: 1, viewMode: 1 });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    btnSave.addEventListener("click", function() {
+        if (!cropper) return;
+        Swal.fire({ title: 'Yuklanmoqda...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
+        const base64Image = canvas.toDataURL("image/png");
+        fetch("{% url 'students:ajax_update_student_profile_picture' %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+            body: JSON.stringify({ student_id: "{{ student.id }}", image: base64Image })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                Swal.fire('Bajarildi!', 'Rasm yangilandi', 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Xato!', data.message, 'error');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

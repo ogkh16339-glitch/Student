@@ -1,0 +1,116 @@
+
+{% load static %}
+
+{% block content %}
+  <section class="section main-banner" id="top" data-section="section1">
+      <video autoplay muted loop id="bg-video">
+          <source src="{% static 'assets/images/course-video.mp4' %}" type="video/mp4" />
+      </video>
+
+      <div class="video-overlay header-text">
+          <div class="caption">
+              <h6>O'zbekiston Oliy Ta'lim Muassasalari</h6>
+              <h2><em>Sizning</em> Kelajagingiz</h2>
+              <div class="main-button">
+                  <div class="scroll-to-section">
+                      <a href="#section_unis">Universitetlarni ko'rish</a>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+  <section class="features">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="search-box-container">
+            <div class="premium-search">
+                <i class="fa fa-search"></i>
+                <input type="text" id="uniSearch" placeholder="Universitet yoki yo'nalish nomi...">
+                <button class="search-confirm">Qidirish</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section courses" id="section_unis" data-section="section4">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="section-heading">
+            <h2>Barcha Oliygo'hlar ({{ universities.count }} ta)</h2>
+          </div>
+        </div>
+        
+        <div class="container">
+            <div class="row">
+                {% for uni in universities %}
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                    <div class="item uni-node-card">
+                        <a href="{% url 'university_detail' uni.slug %}">
+                            <div class="node-image">
+                                {% if uni.image %}
+                                    <img src="{{ uni.image.url }}" alt="{{ uni.name }}">
+                                {% else %}
+                                    <div class="node-placeholder">ABT</div>
+                                {% endif %}
+                                <div class="node-tag">{{ uni.region }}</div>
+                            </div>
+                            <div class="down-content">
+                                <h4>{{ uni.name }}</h4>
+                                <p>{{ uni.description|truncatewords:15 }}</p>
+                                <div class="text-button-pay">
+                                    <span>Batafsil <i class="fa fa-angle-double-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-md-12 text-center">
+                    <h5 style="color: white;">Hozircha universitetlar topilmadi.</h5>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section why-us" data-section="section2">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="section-heading">
+            <h2>Nega bizni tanlashadi?</h2>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div id='tabs'>
+            <ul>
+              <li><a href='#tabs-1'>Aniq Ma'lumotlar</a></li>
+              <li><a href='#tabs-2'>2026 Qabul</a></li>
+              <li><a href='#tabs-3'>O'tish Ballari</a></li>
+            </ul>
+            <section class='tabs-content'>
+              <article id='tabs-1'>
+                <div class="row">
+                  <div class="col-md-6">
+                    <img src="{% static 'assets/images/choose-us-image-01.png' %}" alt="">
+                  </div>
+                  <div class="col-md-6">
+                    <h4>Eng so'nggi ma'lumotlar</h4>
+                    <p>Bizning platformada barcha OTMlar bo'yicha eng so'nggi va rasmiy statistik ma'lumotlar jamlangan.</p>
+                  </div>
+                </div>
+              </article>
+              </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

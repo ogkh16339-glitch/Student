@@ -1,0 +1,295 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>{% block title %}Edura - Premium LMS Boshqaruvi{% endblock %}</title>
+    
+
+    <script src="https://unpkg.com/picmo@latest/dist/umd/index.js"></script>
+    <script src="https://unpkg.com/@picmo/renderer-fontawesome@latest/dist/umd/index.js"></script>
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/quill/quill.snow.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"> 
+    
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    <style>
+        :root {
+            --edura-primary: #4361ee;
+            --edura-secondary: #3f37c9;
+            --edura-success: #4cc9f0;
+            --edura-danger: #f72585;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8f9fa;
+            color: #2d3436;
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+            border-color: var(--edura-primary);
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, var(--edura-primary), var(--edura-secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 2rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(67, 97, 238, 0.3);
+            color: white;
+        }
+
+        #global-unread-badge {
+            background: var(--edura-danger);
+            font-size: 0.65rem;
+            padding: 0.35em 0.6em;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(247, 37, 133, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(247, 37, 133, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(247, 37, 133, 0); }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% include 'includes/header.html' %}
+    {% include 'includes/sidebar.html' %}
+
+    <main id="main" class="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="modal fade" id="addNewsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="post" action="{% url 'core:dashboard' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark"><i class="bi bi-megaphone-fill me-2 text-danger"></i>E'lon qo'shish</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Sarlavha</label>
+                        <input type="text" name="title" class="form-control" placeholder="Muhim xabar sarlavhasi..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Batafsil ma'lumot</label>
+                        <textarea name="content" class="form-control" rows="4" placeholder="Xabar matnini kiriting..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Muqova rasmi</label>
+                        <div class="input-group">
+                            <input type="file" name="image" class="form-control" id="newsImg" accept="image/*">
+                            <label class="input-group-text" for="newsImg"><i class="bi bi-image"></i></label>
+                        </div>
+                    </div>
+                    <input type="hidden" name="add_news" value="1">
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-premium">Chop etish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addVideoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="post" action="{% url 'core:add_video' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark"><i class="bi bi-play-btn-fill me-2 text-info"></i>Media darslik</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Video nomi</label>
+                        <input type="text" name="title" class="form-control" placeholder="Dars mavzusini kiriting..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">YouTube Havola</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-youtube text-danger"></i></span>
+                            <input type="url" name="video_url" class="form-control" placeholder="https://youtube.com/...">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Yoki fayl yuklash</label>
+                        <input type="file" name="video_file" class="form-control" accept="video/*">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Yopish</button>
+                    <button type="submit" class="btn btn-premium">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addTimetableModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="post" action="{% url 'core:dashboard' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark"><i class="bi bi-calendar-plus-fill me-2 text-warning"></i>Dars jadvali qo'shish</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Guruh</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-people text-primary"></i></span>
+                            {{ timetable_form.group }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Hafta kuni</label>
+                            {{ timetable_form.day_of_week }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Xona</label>
+                            {{ timetable_form.room }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Boshlanish vaqti</label>
+                            {{ timetable_form.start_time }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Tugash vaqti</label>
+                            {{ timetable_form.end_time }}
+                        </div>
+                    </div>
+                    <input type="hidden" name="add_timetable" value="1">
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-premium">Jadvalga qo'shish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/sidebar-nav.js' %}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if(document.querySelector("#mainChart")) {
+                new ApexCharts(document.querySelector("#mainChart"), {
+                    series: [{
+                        name: 'Kelganlar',
+                        data: [31, 40, 28, 51, 42, 82, 91]
+                    }, {
+                        name: 'Kelmaganlar',
+                        data: [11, 32, 45, 32, 34, 52, 41]
+                    }],
+                    chart: {
+                        height: 350,
+                        type: 'area',
+                        toolbar: { show: false },
+                        dropShadow: { enabled: true, top: 13, left: 0, blur: 10, opacity: 0.1, color: '#4361ee' }
+                    },
+                    colors: ['#4361ee', '#f72585'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.1 } },
+                    stroke: { curve: 'smooth', width: 3 },
+                    xaxis: { categories: ["Du", "Se", "Cho", "Pa", "Ju", "Sha", "Yak"] },
+                }).render();
+            }
+        });
+
+        function updateNotifications() {
+            fetch("{% url 'core:check_messages_api' %}")
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('global-unread-badge');
+                    if (data.unread_count > 0) {
+                        badge?.classList.remove('d-none');
+                        if(badge) badge.innerText = data.unread_count;
+                    } else {
+                        badge?.classList.add('d-none');
+                    }
+                });
+        }
+        setInterval(updateNotifications, 30000);
+        updateNotifications();
+    </script>
+
+    {% if messages %}
+        {% for message in messages %}
+        <script>
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+            });
+            Toast.fire({
+                icon: '{% if message.tags == "error" %}error{% elif message.tags == "success" %}success{% else %}info{% endif %}',
+                title: '{{ message }}'
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,136 @@
+{% load static %}
+
+<aside id="sidebar" class="sidebar">
+
+  <ul class="sidebar-nav" id="sidebar-nav">
+    
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}{% else %}collapsed{% endif %}" href="{% url 'core:dashboard' %}">
+        <i class="bi bi-grid"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#news-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-newspaper"></i><span>News</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="news-nav" class="nav-content collapse {% if request.resolver_match.url_name == 'saved_news' %}show{% endif %}" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="{% url 'core:news_list' %}">
+            <i class="bi bi-circle"></i><span>All News</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" data-bs-toggle="modal" data-bs-target="#addNewsModal">
+            <i class="bi bi-circle"></i><span>Add Post</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'core:saved_news' %}" class="{% if request.resolver_match.url_name == 'saved_news' %}active{% endif %}">
+            <i class="bi bi-circle"></i><span>Saved News</span>
+            <span class="badge bg-primary ms-2">{{ user.bookmark_set.count }}</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#students-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-people"></i><span>All Students</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="students-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <li><a href="{% url 'students:student_create' %}"><i class="bi bi-circle"></i><span>Add Student</span></a></li>
+        <li><a href="{% url 'students:student_list' %}"><i class="bi bi-circle"></i><span>Students Table</span></a></li>
+      </ul>
+    </li>
+
+    <li class="nav-heading">O'quv Jarayoni</li>
+
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'timetable' %}{% else %}collapsed{% endif %}" data-bs-target="#timetable-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-calendar3"></i><span>Course Calendar</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="timetable-nav" class="nav-content collapse {% if request.resolver_match.url_name == 'timetable' %}show{% endif %}" data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="{% url 'core:timetable' %}" class="{% if request.resolver_match.url_name == 'timetable' %}active{% endif %}">
+            <i class="bi bi-circle"></i><span>Full Timetable</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" data-bs-toggle="modal" data-bs-target="#addTimetableModal">
+            <i class="bi bi-circle"></i><span>Add Lesson</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'students:mark_grades' %}">
+        <i class="bi bi-journal-check"></i>
+        <span>Grades</span>
+      </a>
+    </li>
+
+    {% if user.is_staff %}
+    <li class="nav-heading">Moliya</li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'core:payment_list' %}">
+          <i class="bi bi-currency-dollar"></i>
+          <span>To'lovlar</span>
+      </a>
+    </li>
+    {% endif %}
+
+    <li class="nav-heading">Reports & Analytics</li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'students:gpa_analytics' %}">
+        <i class="bi bi-bar-chart-line"></i>
+        <span>Gpa Ranking</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'students:attendance_report' %}">
+        <i class="bi bi-calendar-check"></i>
+        <span>Attendance Report</span>
+      </a>
+    </li>
+
+    {% if user.teacher %}
+    <li class="nav-heading">O'qituvchi Kabineti</li>
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'core:teacher_dashboard' %}">
+        <i class="bi bi-person-workspace"></i>
+        <span>Mening Guruhlarim</span>
+      </a>
+    </li>
+    {% endif %}
+
+    <li class="nav-heading">Shaxsiy Kabinet</li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'core:admin_profile' %}">
+        <i class="bi bi-person"></i>
+        <span>Profil</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'saved_news' %}{% else %}collapsed{% endif %}" href="{% url 'core:saved_news' %}">
+        <i class="bi bi-bookmark-heart"></i>
+        <span>Saqlanganlar</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="{% url 'core:logout' %}">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Chiqish</span>
+      </a>
+    </li>
+
+  </ul>
+
+</aside>

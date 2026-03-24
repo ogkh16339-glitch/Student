@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bog'lanish | Edura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body { background: #f0f2f5; font-family: 'Inter', sans-serif; }
+        .contact-box { background: white; border-radius: 30px; overflow: hidden; border: none; }
+        .info-panel { background: linear-gradient(135deg, #0d6efd 0%, #003d99 100%); color: white; padding: 50px; }
+        
+        /* Inputlar yozishga qulay bo'lishi uchun */
+        .form-control { 
+            border-radius: 12px; 
+            padding: 14px; 
+            border: 2px solid #edf0f2; 
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus { 
+            border-color: #0d6efd; 
+            background-color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1); 
+            outline: none;
+        }
+        
+        .btn-send { 
+            background: #0d6efd; 
+            border: none; 
+            transition: 0.3s; 
+            letter-spacing: 0.5px;
+        }
+        .btn-send:hover { 
+            background: #0056b3; 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+        
+        .social-icons a { 
+            display: inline-block;
+            transition: 0.3s; 
+            opacity: 0.8; 
+            color: white; 
+            text-decoration: none;
+        }
+        .social-icons a:hover { opacity: 1; transform: translateY(-3px); }
+        
+        /* Alert xabarlari uchun */
+        .alert-custom { border-radius: 15px; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5 mt-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show alert-custom shadow-sm mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <div class="contact-box shadow-lg">
+                <div class="row g-0">
+                    
+                    <div class="col-lg-5 info-panel d-flex flex-column justify-content-between">
+                        <div>
+                            <h2 class="fw-bold mb-4">Aloqada bo'ling</h2>
+                            <p class="opacity-75 mb-5">Savollaringiz yoki takliflaringiz bo'lsa, biz doimo yordamga tayyormiz. Biz bilan bog'lanishdan tortinmang.</p>
+                            
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-2 me-3">
+                                    <i class="bi bi-geo-alt fs-5"></i>
+                                </div>
+                                <span>Toshkent shahar, Amir Temur ko'chasi, 15-uy</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-2 me-3">
+                                    <i class="bi bi-telephone fs-5"></i>
+                                </div>
+                                <span>+998 71 123 45 67</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-white bg-opacity-25 rounded-circle p-2 me-3">
+                                    <i class="bi bi-envelope fs-5"></i>
+                                </div>
+                                <span>support@edura.uz</span>
+                            </div>
+                        </div>
+                        
+                        <div class="social-icons d-flex gap-4 mt-5">
+                            <a href="#" class="fs-4"><i class="bi bi-telegram"></i></a>
+                            <a href="#" class="fs-4"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="fs-4"><i class="bi bi-youtube"></i></a>
+                            <a href="#" class="fs-4"><i class="bi bi-facebook"></i></a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-7 p-5">
+                        <h3 class="fw-bold text-dark mb-4">Xabar yuboring</h3>
+                        
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Ism-sharifingiz</label>
+                                    <input type="text" name="full_name" class="form-control" placeholder="Masalan: Ali Valiyev" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Email manzilingiz</label>
+                                    <input type="email" name="email" class="form-control" placeholder="example@mail.com" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">Mavzu</label>
+                                    <input type="text" name="subject" class="form-control" placeholder="Qaysi masala bo'yicha?" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">Xabar matni</label>
+                                    <textarea name="message" class="form-control" rows="5" placeholder="Xabaringizni bu yerga batafsil yozing..." required></textarea>
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-send w-100 rounded-pill py-3 fw-bold">
+                                        Xabarni yuborish <i class="bi bi-send ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

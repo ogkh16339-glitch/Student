@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Talaba Registratsiyasi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0 text-center">Yangi talaba ro'yxatdan o'tishi</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label font-weight-bold">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="text-muted d-block">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-success w-100 py-2">Ro'yxatdan o'tish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
